@@ -1,194 +1,147 @@
+import 'package:calculator_app/calculator.dart';
+import 'package:calculator_app/drawer_header.dart';
+import 'package:calculator_app/sign_up.dart';
 import 'package:flutter/material.dart';
-import 'package:math_expressions/math_expressions.dart';
+import 'package:calculator_app/login.dart';
 
-void main(){
-  runApp(const CalculatorApp());
+void main() {
+  runApp(MyApp());
 }
 
-class CalculatorApp extends StatelessWidget{
-  const CalculatorApp({super.key});
-
+class MyApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context){
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: CalculatorAppHome(),
-    );
-  }
-}
-
-class CalculatorAppHome extends StatefulWidget{
-  const CalculatorAppHome({super.key});
-
-  @override
-  State<CalculatorAppHome> createState() => _CalculatorAppHomeState();
-
-}
-
-class _CalculatorAppHomeState extends State<CalculatorAppHome> {
-
-  String equation = '0';
-  String result = '0';
-  String expression = '';
-
-//Buttons function
-
-  pressButton(btnText){
-    setState(() {
-      if (btnText == 'AC'){
-        equation = '0';
-        result = '0';
-      }else if (btnText == ' ⌫'){
-
-        equation = equation.substring(0, equation.length -1);
-        if(equation == '') {
-          equation = '0';
-        }
-
-      }else if (btnText == '='){
-
-        expression = equation;
-        expression = expression.replaceAll('×', '*');
-        expression = expression.replaceAll('÷', '/');
-        try{
-          Parser p = Parser();
-          Expression exp = p.parse(expression);
-          ContextModel cm =  ContextModel();
-
-          result ='${exp.evaluate(EvaluationType.REAL, cm)}';
-        }
-            catch(e){
-            'Error';
-            }
-      }else{
-         if(equation == '0'){
-           equation = btnText;
-         }else {
-           equation = equation + btnText;
-         }
-      }
-    });
-  }
-
-
-  Widget calButtons( String btnText, Color txtColor, double btnWidth, Color btnColor){
-    return   InkWell(
-      onTap: (){
-        pressButton(btnText);
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Calculator App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomePage(),
+      routes: {
+        '/login': (context) => Login(),
+        '/signup': (context) => Signup(),
+        '/calculator': (context) => CalculatorApp(),
       },
-      child: Container(
-          alignment: Alignment.center,
-          height: 80,
-          width: btnWidth,
-          decoration: BoxDecoration(
-            color: btnColor,
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text( btnText, style: TextStyle(color: txtColor, fontSize:30, fontWeight:  FontWeight.w500,),)
-      ),
     );
   }
+}
+
+class HomePage extends StatelessWidget {
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        centerTitle: true,
-         backgroundColor: Colors.deepOrangeAccent[100],
-         title: const Text('Calculator', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.normal ),)
+        title: Text('Home'),
+        backgroundColor: Colors.blue[800],
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            );
+          },
+        ),
       ),
-
-      body: Column(
-        children: [
-          const SizedBox(height: 20,),
-          Container(
-            padding:const EdgeInsets.symmetric(horizontal: 20),
-            alignment: Alignment.centerRight,
-            height: 90,
-            width: double.infinity,
-            color: Colors.black,
-            child: Text(equation, style: TextStyle(color: Colors.deepOrangeAccent[100], fontSize: 38,),)
+      drawer: Drawer(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              MyHeaderDrawer(),
+              ListTile(
+                leading: Icon(Icons.login),
+                title: Text('Login'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/login');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.app_registration),
+                title: Text('Sign Up'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/signup');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.calculate),
+                title: Text('Calculator'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/calculator');
+                },
+              ),
+            ],
           ),
-
-          const SizedBox(height: 20,),
-          Container(
-              padding:const EdgeInsets.symmetric(horizontal: 20),
-              alignment: Alignment.centerRight,
-              height: 90,
-              width: double.infinity,
-              color: Colors.black,
-              child: Text(result, style: const TextStyle(color: Colors.white, fontSize: 60,),)
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue[900]!, Colors.orange[800]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          Padding(
+        ),
+        child: Center(
+          child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    calButtons( 'AC', Colors.white, 80, Colors.deepOrangeAccent[100]!),
-                    calButtons( ' ⌫', Colors.white, 80, Colors.white38),
-                    calButtons( '%', Colors.white, 80, Colors.white38),
-                    calButtons( '÷', Colors.white, 80, Colors.deepOrangeAccent[100]!),
-
-                  ]
+                Text(
+                  'Math Made Simple & Fun',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 25 ),
-
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      calButtons( '7', Colors.white, 80, Colors.white10),
-                      calButtons( '8', Colors.white, 80, Colors.white10),
-                      calButtons( '9', Colors.white, 80, Colors.white10),
-                      calButtons( '×', Colors.white, 80, Colors.deepOrangeAccent[100]!),
-
-                    ]
+                SizedBox(height: 40),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/login');
+                  },
+                  icon: Icon(Icons.login),
+                  label: Text('Login'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[800],
+                    foregroundColor: Colors.white,
+                    fixedSize: Size(200, 50),
+                    textStyle: TextStyle(fontSize: 18),
+                  ),
                 ),
-                const SizedBox(height: 25 ),
-
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      calButtons( '4', Colors.white, 80, Colors.white10),
-                      calButtons( '5', Colors.white, 80, Colors.white10),
-                      calButtons( '6', Colors.white, 80, Colors.white10),
-                      calButtons( '-', Colors.white, 80, Colors.deepOrangeAccent[100]!),
-
-                    ]
+                SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/signup');
+                  },
+                  icon: Icon(Icons.app_registration),
+                  label: Text('Sign Up'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[900],
+                    foregroundColor: Colors.white,
+                    fixedSize: Size(200, 50),
+                    textStyle: TextStyle(fontSize: 18),
+                  ),
                 ),
-                const SizedBox(height: 25 ),
-
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      calButtons( '1', Colors.white, 80, Colors.white10),
-                      calButtons( '2', Colors.white, 80, Colors.white10),
-                      calButtons( '3', Colors.white, 80, Colors.white10),
-                      calButtons( '+', Colors.white, 80, Colors.deepOrangeAccent[100]!),
-
-                    ]
+                SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/calculator');
+                  },
+                  icon: Icon(Icons.calculate),
+                  label: Text('Calculator'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange[800],
+                    foregroundColor: Colors.white,
+                    fixedSize: Size(200, 50),
+                    textStyle: TextStyle(fontSize: 18),
+                  ),
                 ),
-                 const SizedBox(height: 25 ),
-
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      calButtons( '0', Colors.white, 170, Colors.white10),
-                      calButtons( '.', Colors.white, 80, Colors.white10),
-                      calButtons( '=', Colors.white, 80, Colors.deepOrangeAccent[100]!),
-
-                    ]
-                ),
-                const SizedBox(height: 25 ),
               ],
             ),
-          )
-
-
-        ],
-
-      ) ,
+          ),
+        ),
+      ),
     );
   }
 }
