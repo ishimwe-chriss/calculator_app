@@ -2,51 +2,39 @@ import 'package:calculator_app/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class Button extends StatelessWidget {
-  const Button({
+class LoginButton extends StatelessWidget {
+  const LoginButton({
     super.key,
     required this.emailController,
     required this.passwordController,
-    required this.confirmPasswordController,
   });
 
   final TextEditingController emailController;
   final TextEditingController passwordController;
-  final TextEditingController confirmPasswordController;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
-        if (passwordController.text != confirmPasswordController.text) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Passwords do not match!'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
-
         try {
-          UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
             email: emailController.text,
             password: passwordController.text,
           );
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Signup Successful! Welcome, ${userCredential.user!.email}!'),
+              content: Text('Login Successful! Welcome, ${userCredential.user!.email}!'),
               backgroundColor: Colors.green,
             ),
           );
         } on FirebaseAuthException catch (e) {
           String message;
-          if (e.code == 'email-already-in-use') {
-            message = 'The account already exists for that email.';
-          } else if (e.code == 'weak-password') {
-            message = 'The password provided is too weak.';
+          if (e.code == 'user-not-found') {
+            message = 'No user found for that email.';
+          } else if (e.code == 'wrong-password') {
+            message = 'Wrong password provided.';
           } else {
-            message = 'Signup failed. Please try again.';
+            message = 'Login failed. Please try again.';
           }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -70,7 +58,7 @@ class Button extends StatelessWidget {
           ],
         ),
         child: const Text(
-          'Sign Up',
+          'Login',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,

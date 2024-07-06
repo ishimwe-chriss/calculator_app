@@ -1,146 +1,111 @@
-import 'package:calculator_app/calculator.dart';
-import 'package:calculator_app/drawer_header.dart';
-import 'package:calculator_app/sign_up.dart';
+import 'package:battery/battery.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:calculator_app/login.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'home_screen.dart';
+import 'login.dart';
+import 'sign_up.dart';
+import 'calculator.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+ WidgetsFlutterBinding.ensureInitialized();
+ await Firebase.initializeApp(
+     options: const FirebaseOptions(
+         apiKey: "AIzaSyBHPBjBX87TiFihJmgVwnBUhfIn_Z-aOZg",
+         appId: "1:632312362517:android:eae820c26902480691001c",
+         messagingSenderId: "632312362517",
+         projectId: "sign-f49de"
+         )
+ );
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  MyAppState createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp> {
+  ThemeMode themeMode = ThemeMode.light;
+
+  static const String BATTERY_NOTIFICATION_CHANNEL_ID = "battery_notification";
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
+  void initNotifs() async {
+    var initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher'); // Assuming you have ic_launcher.png
+
+    var initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+    );
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final battery = Battery();
+    initNotifs();
+    Connectivity().onConnectivityChanged.listen((result) {
+      final hasInternet = result != ConnectivityResult.none;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(hasInternet ? 'Internet Connected!' : 'No Internet Connection!'),
+        ),
+      );
+    });
+
+    battery.onBatteryStateChanged.listen((BatteryState state) {
+      if (state == BatteryState.charging) {
+        battery.batteryLevel.then((level) {
+          if (level >= 90) {
+            flutterLocalNotificationsPlugin.show(
+              0,
+              'Battery level',
+              'Battery level is now $level%',
+              NotificationDetails(
+                android: AndroidNotificationDetails(
+                  BATTERY_NOTIFICATION_CHANNEL_ID,
+                  BATTERY_NOTIFICATION_CHANNEL_ID, // Removed extra argument
+                ),
+              ),
+            );
+          }
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Calculator App',
-      theme: ThemeData(
+      title: 'Calculator',
+      theme: themeMode == ThemeMode.light
+          ? ThemeData(
         primarySwatch: Colors.blue,
+        brightness: Brightness.light,
+      )
+          : ThemeData(
+        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
       ),
-      home: HomePage(),
       routes: {
         '/login': (context) => Login(),
         '/signup': (context) => Signup(),
         '/calculator': (context) => CalculatorApp(),
       },
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Home'),
-        backgroundColor: Colors.blue[800],
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: Icon(Icons.menu),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            );
-          },
-        ),
-      ),
-      drawer: Drawer(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              MyHeaderDrawer(),
-              ListTile(
-                leading: Icon(Icons.login),
-                title: Text('Login'),
-                onTap: () {
-                  Navigator.pushNamed(context, '/login');
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.app_registration),
-                title: Text('Sign Up'),
-                onTap: () {
-                  Navigator.pushNamed(context, '/signup');
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.calculate),
-                title: Text('Calculator'),
-                onTap: () {
-                  Navigator.pushNamed(context, '/calculator');
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue[900]!, Colors.orange[800]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Math Made Simple & Fun',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 40),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/login');
-                  },
-                  icon: Icon(Icons.login),
-                  label: Text('Login'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[800],
-                    foregroundColor: Colors.white,
-                    fixedSize: Size(200, 50),
-                    textStyle: TextStyle(fontSize: 18),
-                  ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/signup');
-                  },
-                  icon: Icon(Icons.app_registration),
-                  label: Text('Sign Up'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[900],
-                    foregroundColor: Colors.white,
-                    fixedSize: Size(200, 50),
-                    textStyle: TextStyle(fontSize: 18),
-                  ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/calculator');
-                  },
-                  icon: Icon(Icons.calculate),
-                  label: Text('Calculator'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange[800],
-                    foregroundColor: Colors.white,
-                    fixedSize: Size(200, 50),
-                    textStyle: TextStyle(fontSize: 18),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      home: HomeScreen(
+        onThemeChanged: (themeMode) {
+          setState(() {
+            this.themeMode = themeMode;
+          });
+        },
       ),
     );
   }

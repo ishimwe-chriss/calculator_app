@@ -1,19 +1,49 @@
 import 'package:calculator_app/global_colors.dart';
-import 'package:calculator_app/widgets/buttonglobal.dart';
+import 'package:calculator_app/widgets/button_login.dart';
 import 'package:calculator_app/widgets/form.dart';
 import 'package:calculator_app/widgets/social_login.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class Login extends StatelessWidget {
+
+class Login extends StatefulWidget {
   Login({Key? key}) : super(key: key);
+
+  @override
+  _LoginState createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // Add your navigation logic here
+    switch (index) {
+      case 0:
+        Navigator.pushNamed(context, '/login');
+        break;
+      case 1:
+        Navigator.pushNamed(context, '/signup');
+        break;
+      case 2:
+        Navigator.pushNamed(context, '/calculator');
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = Theme.of(context).colorScheme.primary;
+    final Color onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
+    final Color backgroundColor = Theme.of(context).colorScheme.background;
+    final Color onBackgroundColor = Theme.of(context).colorScheme.onBackground;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       body: SingleChildScrollView(
         child: SafeArea(
           child: Container(
@@ -27,7 +57,7 @@ class Login extends StatelessWidget {
                   'WELCOME BACK',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.blue[800],
+                    color: primaryColor,
                     fontSize: 35,
                     fontWeight: FontWeight.bold,
                   ),
@@ -38,14 +68,14 @@ class Login extends StatelessWidget {
                   child: Text(
                     'Login to your account',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: onBackgroundColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                /// Email Input
+                // Email Input
                 TextFormGlobal(
                   controller: emailController,
                   text: 'Email',
@@ -53,7 +83,7 @@ class Login extends StatelessWidget {
                   textInputType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 20),
-                /// Password Input
+                // Password Input
                 TextFormGlobal(
                   controller: passwordController,
                   text: 'Password',
@@ -62,12 +92,16 @@ class Login extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 const SizedBox(height: 20),
-                const Button(),
+                // Use the LoginButton widget
+                LoginButton(
+                  emailController: emailController,
+                  passwordController: passwordController,
+                ),
                 const SizedBox(height: 50), // Increased space before "or sign-with"
                 Text(
                   '',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: onBackgroundColor,
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                   ),
@@ -80,33 +114,24 @@ class Login extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        height: 50,
-        color: Colors.white,
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Don\'t have an account? ',
-              style: TextStyle(
-                color: Colors.black,
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                // Add your navigation logic here
-              },
-              child: Text(
-                'Sign Up',
-                style: TextStyle(
-                  color: GlobalColors.mainColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.login),
+            label: 'Login',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.app_registration),
+            label: 'Sign up',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calculate),
+            label: 'Calculator',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: GlobalColors.mainColor,
+        onTap: _onItemTapped,
       ),
     );
   }
